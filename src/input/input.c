@@ -54,7 +54,7 @@ int input_getMouseY(void)
 int input_isDown(int code)
 {
 	if (code < 0) {
-		return mouseState & (SDL_BUTTON_LMASK >> -(code+1)); //Negatives ensure exclusivity with keyboard
+		return mouseState & SDL_BUTTON(-code); //Negatives ensure exclusivity with keyboard
 	} else {
 		return keyboardState[code];
 	}
@@ -64,7 +64,7 @@ int input_isDown(int code)
 int input_justPressed(int code)
 {
 	if (code < 0) {
-		return !((prevMouseState & (SDL_BUTTON_LMASK >> -(code+1)))) && (mouseState & (SDL_BUTTON_LMASK >> -(code+1))); //Negatives ensure exclusivity with keyboard
+		return !(prevMouseState & SDL_BUTTON(-code)) && (mouseState & SDL_BUTTON(-code)); //Negatives ensure exclusivity with keyboard
 	} else {
 		return !prevKeyboardState[code] && keyboardState[code];
 	}
@@ -74,7 +74,7 @@ int input_justPressed(int code)
 int input_justReleased(int code)
 {
 	if (code < 0) {
-		return ((prevMouseState & (SDL_BUTTON_LMASK >> -(code+1)))) && !(mouseState & (SDL_BUTTON_LMASK >> -(code+1))); //Negatives ensure exclusivity with keyboard
+		return (prevMouseState & SDL_BUTTON(-code)) && !(mouseState & SDL_BUTTON(-code)); //Negatives ensure exclusivity with keyboard
 	} else {
 		return prevKeyboardState[code] && !keyboardState[code];
 	}

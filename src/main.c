@@ -20,8 +20,11 @@
 #include "input/input.h"
 
 
-#define WINDOW_WIDTH 640
-#define WINDOW_HEIGHT 480
+#define CELL_SIZE 50
+
+
+#define WINDOW_WIDTH (CELL_SIZE*WORLD_WIDTH)
+#define WINDOW_HEIGHT (CELL_SIZE*WORLD_HEIGHT)
 
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 
@@ -82,29 +85,52 @@ void closeSDL(SDL_Window *window, SDL_Renderer *renderer)
 
 
 
+typedef enum {
+	PLAY_PAUSE, 
+	TOGGLE_WALL, 
+	TOGGLE_WATER, 
+	NUM_BINDINGS
+} Binding_t;
 
 
-static const int keyAssignments[6] = {
-	SDL_SCANCODE_A, 
-	SDL_SCANCODE_D, 
+static const Binding_t bindings[NUM_BINDINGS] = {
 	SDL_SCANCODE_SPACE, 
-	SDL_SCANCODE_W, 
-	SDL_SCANCODE_S, 
-	SDL_SCANCODE_LEFTCLICK
+	SDL_SCANCODE_LEFTCLICK,
+	SDL_SCANCODE_RIGHTCLICK
 };
 
-#define RUN_IMPULSE 5000
 
-
-void handleInput(void)
+void handleInput(Cell_t world[WORLD_WIDTH][WORLD_HEIGHT], bool *isSimRunning)
 {
-	if (input_justPressed(SDL_SCANCODE_LEFTCLICK)) {
-		//dostuff();
+	if (input_justPressed(bindings[TOGGLE_WALL])) {
+		int x = input_getMouseX();
+		int y = input_getMouseY();
+
+		if (world[x/CELL_SIZE][y/CELL_SIZE].isWall) {
+			world[x/CELL_SIZE][y/CELL_SIZE].isWall = false;
+		} else {
+			world[x/CELL_SIZE][y/CELL_SIZE].head = 0;
+			world[x/CELL_SIZE][y/CELL_SIZE].isWall = true;
+		}
+	}
+	
+	if (input_justPressed(bindings[TOGGLE_WATER])) {
+		int x = input_getMouseX();
+		int y = input_getMouseY();
+
+		if (world[x/CELL_SIZE][y/CELL_SIZE].head > 50) {
+			world[x/CELL_SIZE][y/CELL_SIZE].head = 0;
+		} else {
+			world[x/CELL_SIZE][y/CELL_SIZE].isWall = false;
+			world[x/CELL_SIZE][y/CELL_SIZE].head = 100;
+		}
+	}
+
+	if (input_justPressed(bindings[PLAY_PAUSE])) {
+		*isSimRunning = !*isSimRunning;
 	}
 }
 
-
-#define CELL_SIZE 50
 
 void drawWorld(Cell_t world[WORLD_WIDTH][WORLD_HEIGHT], SDL_Renderer *renderer)
 {
@@ -142,26 +168,28 @@ int main(void)
 
 	Cell_t world[WORLD_WIDTH][WORLD_HEIGHT] = {0};
 
-	for (int i = 0; i < WORLD_HEIGHT; i++) {
-		world[0][i].head = 100;
-	}
 
+
+	bool isSimRunning = false;
 
 	while (isRunning) {
 
 		input_update();
-		handleInput();
+		handleInput(world, &isSimRunning);
 
-
-		hydro_update(world);
-		drawWorld(world, renderer);
-		double sum = 0;
-		for (int i = 0; i < WORLD_WIDTH; i++) {
-			for (int j = 0; j < WORLD_HEIGHT; j++) {
-				sum += world[i][j].head;
+		if (isSimRunning) {
+			hydro_update(world);
+			double sum = 0;
+			for (int i = 0; i < WORLD_WIDTH; i++) {
+				for (int j = 0; j < WORLD_HEIGHT; j++) {
+					sum += world[i][j].head;
+				}
 			}
+			printf("%4.2f\n", sum);
 		}
-		printf("%4.2f\n", sum);
+
+		drawWorld(world, renderer);
+		
 
 
 		//usleep(1e6);

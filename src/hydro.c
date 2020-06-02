@@ -12,7 +12,6 @@
 #define SIGN(x) ( (x) == 0 ? 0 : ( (x) > 0 ? 1 : -1 ) ) /*Returns 0 if sign is 0; supports floating */
 
 
-#define SPEED_FACTOR 1.0
 
 static inline double doubleClock(void)
 {
@@ -93,7 +92,7 @@ void hydro_update(Cell_t world[WORLD_WIDTH][WORLD_HEIGHT])
 
 	double tNow = doubleClock();
 	double dt = tNow - tPrev;
-	dt*=1.5;
+	dt*=5;
 	tPrev = tNow;
 
 	static Cell_t diff[WORLD_WIDTH][WORLD_HEIGHT];
@@ -105,11 +104,11 @@ void hydro_update(Cell_t world[WORLD_WIDTH][WORLD_HEIGHT])
 			int neighbourDirs[4][2];
 			int n = getNeighbourDirs(neighbourDirs, world, i, j);
 
-			if (world[i][j].head > 0 && n > 0) { //If the cell has water to give (avoids div by 0) and has neighbours to interact with. 
+			if (world[i][j].head > 5 && n > 0) { //If the cell has water to give (avoids div by 0) and has neighbours to interact with. 
 
 				double vSquared = world[i][j].vx*world[i][j].vx + world[i][j].vy*world[i][j].vy;
-				double headFraction = fabs(world[i][j].head)/(fabs(world[i][j].head) + vSquared); //TODO: corrective scale factor. 
-				double amountLost = world[i][j].head*SPEED_FACTOR;
+				double headFraction = fabs(world[i][j].head)/(fabs(world[i][j].head) + sqrt(vSquared)); //TODO: This is pulled out of an orafice. 
+				double amountLost = world[i][j].head;
 
 				double headAmountEach = headFraction*amountLost/n;
 
