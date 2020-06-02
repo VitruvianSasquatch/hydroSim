@@ -106,7 +106,7 @@ void handleInput(void)
 
 #define CELL_SIZE 50
 
-void drawWorld(double head[WORLD_WIDTH][WORLD_HEIGHT], bool walls[WORLD_WIDTH][WORLD_HEIGHT], SDL_Renderer *renderer)
+void drawWorld(Cell_t world[WORLD_WIDTH][WORLD_HEIGHT], SDL_Renderer *renderer)
 {
 	SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
 	SDL_RenderClear(renderer);
@@ -114,10 +114,10 @@ void drawWorld(double head[WORLD_WIDTH][WORLD_HEIGHT], bool walls[WORLD_WIDTH][W
 	for (int i = 0; i < WORLD_WIDTH; i++) {
 		for (int j = 0; j < WORLD_HEIGHT; j++) {
 			SDL_Rect fillRect = {i*CELL_SIZE, j*CELL_SIZE, CELL_SIZE, CELL_SIZE};
-			if (walls[i][j]) {
+			if (world[i][j].isWall) {
 				SDL_SetRenderDrawColor(renderer, 210, 90, 0, 0xff);
 			} else {
-				SDL_SetRenderDrawColor(renderer, 0x00, 0x00, MIN(head[i][j], UINT8_MAX), 0xff);
+				SDL_SetRenderDrawColor(renderer, 0x00, 0x00, MIN(4*world[i][j].head, UINT8_MAX), 0xff);
 			}
 			SDL_RenderFillRect(renderer, &fillRect);
 		}
@@ -140,12 +140,10 @@ int main(void)
 
 	input_init();
 
-	double head[WORLD_WIDTH][WORLD_HEIGHT] = {0};
-	double v[WORLD_WIDTH][WORLD_HEIGHT] = {0};
-	bool walls[WORLD_WIDTH][WORLD_HEIGHT] = {0};
+	Cell_t world[WORLD_WIDTH][WORLD_HEIGHT] = {0};
 
 	for (int i = 0; i < WORLD_HEIGHT; i++) {
-		head[2][i] = 100;
+		world[0][i].head = 100;
 	}
 
 
@@ -155,19 +153,16 @@ int main(void)
 		handleInput();
 
 
-		hydro_update(head, v, walls);
-		drawWorld(head, walls, renderer);
+		hydro_update(world);
+		drawWorld(world, renderer);
 		double sum = 0;
 		for (int i = 0; i < WORLD_WIDTH; i++) {
-			printf("%3.2f ", head[i][0]);
-			sum += head[i][0];
+			for (int j = 0; j < WORLD_HEIGHT; j++) {
+				sum += world[i][j].head;
+			}
 		}
-		printf(": %4.2f\n", sum);
+		printf("%4.2f\n", sum);
 
-		for (int i = 0; i < WORLD_WIDTH; i++) {
-			printf("%3.2f ", v[i][0]);
-		}
-		printf("\n\n\n");
 
 		//usleep(1e6);
 

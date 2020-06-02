@@ -4,11 +4,20 @@
 #include <stdbool.h>
 
 
-#define WORLD_WIDTH 5
-#define WORLD_HEIGHT 1
+#define WORLD_WIDTH 10
+#define WORLD_HEIGHT 10
 
 
-void hydro_update(double head[WORLD_WIDTH][WORLD_HEIGHT], double v[WORLD_WIDTH][WORLD_HEIGHT], bool walls[WORLD_WIDTH][WORLD_HEIGHT]);
+typedef struct {
+	double head;
+	double vx;
+	double vy;
+	bool isWall;
+} Cell_t;
+
+
+
+void hydro_update(Cell_t world[WORLD_WIDTH][WORLD_HEIGHT]);
 
 
 
